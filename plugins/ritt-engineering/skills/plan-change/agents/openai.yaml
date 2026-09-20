@@ -1,0 +1,5 @@
+interface:
+  display_name: "Plan Change"
+  short_description: "Phased plan with two options and acceptance criteria"
+policy:
+  allow_implicit_invocation: true

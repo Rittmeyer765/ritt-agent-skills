@@ -1,0 +1,5 @@
+interface:
+  display_name: "Research & Reuse"
+  short_description: "Check if it already exists before building it"
+policy:
+  allow_implicit_invocation: true

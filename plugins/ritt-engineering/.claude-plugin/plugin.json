@@ -1,0 +1,9 @@
+{
+  "name": "ritt-engineering",
+  "description": "Review-first engineering workflows: adaptive clarification, reuse-first research, two-option planning, evidence-based implementation, validation ladder, and per-project memory.",
+  "version": "0.4.0",
+  "author": {
+    "name": "Ritt"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Review Change"
+  short_description: "Severity-ranked correctness, security, and maintainability review"
+policy:
+  allow_implicit_invocation: true

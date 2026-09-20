@@ -1,0 +1,5 @@
+interface:
+  display_name: "Check Upstream"
+  short_description: "Read-only upstream update check with review report"
+policy:
+  allow_implicit_invocation: false

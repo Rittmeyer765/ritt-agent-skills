@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.idea/
+.vscode/
+.env
+.env.*
+coverage/
+*.log
+reports/upstream/*
+!reports/upstream/.gitkeep

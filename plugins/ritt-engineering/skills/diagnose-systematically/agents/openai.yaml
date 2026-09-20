@@ -1,0 +1,5 @@
+interface:
+  display_name: "Diagnose Systematically"
+  short_description: "Evidence-based root cause before any fix"
+policy:
+  allow_implicit_invocation: true

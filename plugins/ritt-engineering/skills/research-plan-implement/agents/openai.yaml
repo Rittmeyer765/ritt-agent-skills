@@ -1,0 +1,5 @@
+interface:
+  display_name: "Research · Plan · Implement"
+  short_description: "Three context-isolated phases; the plan is the source of truth"
+policy:
+  allow_implicit_invocation: false

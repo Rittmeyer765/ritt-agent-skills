@@ -1,0 +1,18 @@
+{
+  "name": "ritt-agent-skills",
+  "description": "Personal review-first engineering skills for Codex and Claude Code, adapted from mattpocock/skills.",
+  "owner": {
+    "name": "Ritt"
+  },
+  "plugins": [
+    {
+      "name": "ritt-engineering",
+      "source": "./plugins/ritt-engineering",
+      "description": "Review-first engineering workflows: adaptive clarification, reuse-first research, two-option planning, evidence-based implementation, validation ladder, and per-project memory.",
+      "version": "0.4.0",
+      "author": {
+        "name": "Ritt"
+      }
+    }
+  ]
+}

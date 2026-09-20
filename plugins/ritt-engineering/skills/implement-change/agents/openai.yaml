@@ -1,0 +1,5 @@
+interface:
+  display_name: "Implement Change"
+  short_description: "Smallest coherent diff that follows repo patterns"
+policy:
+  allow_implicit_invocation: true

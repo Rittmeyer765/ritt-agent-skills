@@ -1,0 +1,35 @@
+{
+  "comment": "Maps each local skill to the upstream material it adapts. When a tracked upstream file changes, review the mapped local skill and decide manually whether to port anything.",
+  "customizations": [
+    {
+      "local": "plugins/ritt-engineering/skills/clarify-task",
+      "upstream": ["skills/productivity/grilling/SKILL.md", "skills/productivity/grill-me/SKILL.md"],
+      "notes": "Adaptive 0-20 question budget instead of open-ended grilling."
+    },
+    {
+      "local": "plugins/ritt-engineering/skills/research-and-reuse",
+      "upstream": ["skills/engineering/research/SKILL.md"],
+      "notes": "Adds reuse-first assessment (do not reinvent the wheel)."
+    },
+    {
+      "local": "plugins/ritt-engineering/skills/diagnose-systematically",
+      "upstream": ["skills/engineering/diagnosing-bugs/SKILL.md", "skills/engineering/triage/SKILL.md"],
+      "notes": "Adds certainty labels and root-cause vs symptom separation."
+    },
+    {
+      "local": "plugins/ritt-engineering/skills/implement-change",
+      "upstream": ["skills/engineering/implement/SKILL.md"],
+      "notes": "Adds minimal-diff discipline and project memory updates."
+    },
+    {
+      "local": "plugins/ritt-engineering/skills/review-change",
+      "upstream": ["skills/engineering/code-review/SKILL.md"],
+      "notes": "Adds explicit security checklist."
+    },
+    {
+      "local": "plugins/ritt-engineering/skills/handoff",
+      "upstream": ["skills/productivity/handoff/SKILL.md"],
+      "notes": "Saves into project memory instead of the OS temp directory."
+    }
+  ]
+}

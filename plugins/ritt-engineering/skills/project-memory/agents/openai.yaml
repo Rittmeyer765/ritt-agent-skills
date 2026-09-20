@@ -1,0 +1,5 @@
+interface:
+  display_name: "Project Memory"
+  short_description: "Append-only history plus overwritten current context"
+policy:
+  allow_implicit_invocation: false

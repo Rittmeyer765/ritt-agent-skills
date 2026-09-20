@@ -1,0 +1,16 @@
+{
+  "comment": "Upstream paths worth watching. When check_upstream reports UPDATE_AVAILABLE, these are the files that get snapshotted and diffed for manual review.",
+  "paths": [
+    "README.md",
+    "skills/engineering/research/SKILL.md",
+    "skills/engineering/diagnosing-bugs/SKILL.md",
+    "skills/engineering/implement/SKILL.md",
+    "skills/engineering/code-review/SKILL.md",
+    "skills/engineering/triage/SKILL.md",
+    "skills/engineering/codebase-design/SKILL.md",
+    "skills/productivity/grilling/SKILL.md",
+    "skills/productivity/grill-me/SKILL.md",
+    "skills/productivity/handoff/SKILL.md",
+    "skills/productivity/writing-great-skills/SKILL.md"
+  ]
+}

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Clarify Task"
+  short_description: "Adaptive question batch to sharpen scope before working"
+policy:
+  allow_implicit_invocation: true

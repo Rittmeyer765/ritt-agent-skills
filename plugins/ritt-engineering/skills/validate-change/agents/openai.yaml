@@ -1,0 +1,5 @@
+interface:
+  display_name: "Validate Change"
+  short_description: "Adaptive validation ladder with explicit results"
+policy:
+  allow_implicit_invocation: true
