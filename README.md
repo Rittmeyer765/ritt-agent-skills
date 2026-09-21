@@ -15,6 +15,7 @@ flowchart LR
   IM --> V["Validar en escalera"]
   V --> R["Revisar<br/>(seguridad siempre)"]
   O --> M[".agent/<br/>memoria del proyecto"]
+  O -.-> P["🐴 Ponytail (externo, opcional)<br/>respuestas concisas"]
 ```
 
 Las skills se cargan **solo cuando hacen falta** (estándar [Agent Skills](https://agentskills.io/specification), *progressive disclosure*): en reposo cada una ocupa ~100 tokens (nombre + descripción). Al dispararse, se lee su `SKILL.md`; los recursos pesados solo se cargan si se usan.
@@ -87,6 +88,7 @@ Guía completa: [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 ## 🔌 Integraciones opcionales
 
+- **🐴 Ponytail** (externo, recomendado): plugin aparte que hace que el agente sea *lazy* — respuestas concisas y sin sobreingeniería. **No se incluye en este kit** (es otro proyecto/licencia); se instala por separado: [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail). Encaja de forma natural encima de estas skills.
 - **Graphify** (opcional, `graphify-map`): mapa local del código con citas `file:line`. **No se instala solo** y queda fuera del PATH; útil para preguntas de dependencias cross-file. Resultado del A/B y cuándo merece la pena: [docs/benchmarks/graphify-smoke.md](docs/benchmarks/graphify-smoke.md).
 - **OmniRoute** (preparado, **inactivo**): plantillas seguras para un gateway local opt-in. No se activa por defecto.
 
