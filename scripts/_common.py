@@ -90,3 +90,19 @@ def has_symlink_in_chain(path: Path, boundary: Path) -> bool:
         if node.parent == node:  # filesystem root reached without hitting boundary
             return False
         node = node.parent
+
+
+_SOURCE_RE = _re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def resolve_upstream_source(source: str) -> Path:
+    """Map a source NAME to upstream/<source>, rejecting traversal, symlinks, and unknown sources."""
+    if not isinstance(source, str) or not _SOURCE_RE.match(source):
+        raise SystemExit(f"Invalid upstream source {source!r}: must match ^[a-z0-9][a-z0-9-]*$")
+    base = ROOT / "upstream"
+    d = base / source
+    if not is_within(d, base) or has_symlink_in_chain(d, base):
+        raise SystemExit(f"Refusing upstream source outside upstream/ or via symlink: {source}")
+    if not d.is_dir():
+        raise SystemExit(f"Unknown upstream source: {source} (no {d})")
+    return d

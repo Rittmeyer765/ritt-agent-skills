@@ -13,9 +13,11 @@ from _common import ROOT
 
 PLUGIN = ROOT / "plugins" / "ritt-engineering"
 
-EXPECTED_SKILLS = 12          # count test: bump when adding/removing a skill
-EXPECTED_VERSION = "0.4.0"    # release under validation
+EXPECTED_SKILLS = 13          # count test: bump when adding/removing a skill
+EXPECTED_VERSION = "0.5.2"    # release under validation
 
+# Agent Skills spec (agentskills.io): name pattern, no leading/trailing/consecutive hyphens.
+_SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _POLICY_RE = re.compile(r"allow_implicit_invocation\s*:\s*(true|false)")
 _LINK_RE = re.compile(r"\]\((?!https?:|mailto:|#)([^)]+)\)")
 # Case-sensitive legacy filenames (won't match the rules file research.md)
@@ -56,13 +58,23 @@ def validate_skills() -> int:
         skill_file = skill_path / "SKILL.md"
         check_path(skill_file)
         fields = parse_frontmatter(skill_file)
-        if fields.get("name") != skill_path.name:
-            raise ValueError(
-                f"{skill_file}: frontmatter name {fields.get('name')!r} "
-                f"does not match directory {skill_path.name!r}"
-            )
-        if len(fields.get("description", "")) < 20:
-            raise ValueError(f"{skill_file}: description missing or too short to trigger reliably")
+        # Agent Skills conformance (agentskills.io/specification)
+        name = fields.get("name", "")
+        if name != skill_path.name:
+            raise ValueError(f"{skill_file}: name {name!r} must match directory {skill_path.name!r}")
+        if not (1 <= len(name) <= 64) or not _SKILL_NAME_RE.match(name):
+            raise ValueError(f"{skill_file}: name must be 1-64 chars, ^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        desc = fields.get("description", "")
+        if not (1 <= len(desc) <= 1024):
+            raise ValueError(f"{skill_file}: description must be non-empty and <= 1024 chars")
+        compat = fields.get("compatibility")
+        if compat is not None and not (1 <= len(compat) <= 500):
+            raise ValueError(f"{skill_file}: compatibility must be 1-500 chars when present")
+        allowed = fields.get("allowed-tools")
+        if allowed is not None and not allowed.strip():
+            raise ValueError(f"{skill_file}: allowed-tools must be a non-empty string when present")
+        if len(skill_file.read_text(encoding="utf-8").splitlines()) > 500:
+            print(f"WARN: {skill_file} exceeds 500 lines (spec recommends splitting into references/).")
 
         yaml_file = skill_path / "agents" / "openai.yaml"
         check_path(yaml_file)
@@ -138,15 +150,68 @@ def validate_canonical_template() -> None:
             raise ValueError(f"Template still ships legacy memory file: .agent/{legacy}")
 
 
-def validate_upstream_baseline() -> None:
-    lock = read_json(ROOT / "upstream" / "mattpocock" / "LOCK.json", default={}) or {}
-    revision = lock.get("accepted_revision")
-    if revision:
-        if not SHA1_RE.match(str(revision)):
-            raise ValueError(f"LOCK accepted_revision {revision!r} is not a 40-char hex SHA")
-        manifest = ROOT / "upstream" / "mattpocock" / "snapshots" / revision / "MANIFEST.json"
-        if not manifest.exists():
-            raise ValueError(f"LOCK accepted_revision {revision} has no snapshot manifest")
+def validate_upstream_baseline() -> int:
+    """Validate every upstream/<source>/LOCK.json (mattpocock, agent-skills-spec, ...)."""
+    sources = 0
+    for lock_path in sorted((ROOT / "upstream").glob("*/LOCK.json")):
+        sources += 1
+        lock = read_json(lock_path, default={}) or {}
+        revision = lock.get("accepted_revision")
+        if revision:  # null/None = no baseline yet (e.g. agent-skills-spec)
+            if not SHA1_RE.match(str(revision)):
+                raise ValueError(f"{lock_path}: accepted_revision {revision!r} is not a 40-char hex SHA")
+            manifest = lock_path.parent / "snapshots" / revision / "MANIFEST.json"
+            if not manifest.exists():
+                raise ValueError(f"{lock_path}: accepted_revision {revision} has no snapshot manifest")
+    return sources
+
+
+def validate_graphify_adapter() -> None:
+    """Self-test graphify-map: absent->exit 3 (no install); build/query map to the EXACT graphify
+    argv; unknown/dangerous ops are refused (exit 4) and never call graphify."""
+    import os
+    import subprocess
+    import tempfile
+
+    wrapper = PLUGIN / "skills" / "graphify-map" / "scripts" / "graphify_map.sh"
+    check_path(wrapper)
+    absent = subprocess.run(
+        ["bash", str(wrapper), "build", "/tmp/x"], capture_output=True, env={"PATH": "/usr/bin:/bin"}
+    )
+    if absent.returncode != 3:
+        raise ValueError("graphify-map must exit 3 (never install) when graphify is absent")
+
+    with tempfile.TemporaryDirectory() as d:
+        fake = os.path.join(d, "graphify")
+        argv = os.path.join(d, "argv")
+        with open(fake, "w", encoding="utf-8") as fh:
+            fh.write('#!/usr/bin/env bash\nprintf "%s\\n" "$@" > "$ARGV_OUT"\n')
+        os.chmod(fake, 0o755)
+        env = {"PATH": d + ":/usr/bin:/bin", "ARGV_OUT": argv}
+
+        def run(*a: str) -> tuple[int, list[str]]:
+            open(argv, "w").close()
+            r = subprocess.run(["bash", str(wrapper), *a], capture_output=True, env=env)
+            got = Path(argv).read_text(encoding="utf-8").split() if Path(argv).exists() else []
+            return r.returncode, got
+
+        rc, got = run("build", "/tmp/x")
+        if rc != 0 or got != ["extract", "/tmp/x", "--code-only"]:
+            raise ValueError(f"graphify-map build must run 'extract <path> --code-only', got {got}")
+        rc, got = run("query", "how does auth work")
+        if rc != 0 or got[0] != "query" or got[-2:] != ["--budget", "1500"] or " ".join(got[1:-2]) != "how does auth work":
+            raise ValueError(f"graphify-map query must run 'query <question> --budget 1500', got {got}")
+        # non-numeric budget must be refused before graphify is called
+        open(argv, "w").close()
+        bad = subprocess.run(
+            ["bash", str(wrapper), "query", "q"], capture_output=True,
+            env={**env, "GRAPHIFY_QUERY_BUDGET": "abc"},
+        )
+        if bad.returncode != 2 or Path(argv).read_text(encoding="utf-8").strip():
+            raise ValueError("graphify-map must reject a non-numeric GRAPHIFY_QUERY_BUDGET (exit 2, no call)")
+        rc, got = run("install")
+        if rc != 4 or got:
+            raise ValueError("graphify-map must refuse install/unknown (exit 4) and never call graphify")
 
 
 def validate_security_regression() -> None:
@@ -241,6 +306,7 @@ def main() -> None:
     docs_scanned = validate_no_legacy_runtime_refs()
     validate_canonical_template()
     validate_anti_loop_guard()
+    validate_graphify_adapter()
     validate_security_regression()
     validate_upstream_baseline()
 

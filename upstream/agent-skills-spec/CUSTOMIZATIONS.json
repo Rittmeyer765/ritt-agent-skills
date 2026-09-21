@@ -1,0 +1,4 @@
+{
+  "comment": "Canonical Agent Skills spec (https://agentskills.io/specification). validate_repo.py mirrors its SKILL.md frontmatter rules; no local skill copies upstream content. Review-first: never auto-import. anthropics/skills is examples-only and unlicensed - do NOT copy.",
+  "customizations": []
+}

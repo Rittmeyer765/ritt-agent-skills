@@ -1,0 +1,5 @@
+interface:
+  display_name: "Graphify Map"
+  short_description: "Query a local code knowledge graph (manual, code-only)"
+policy:
+  allow_implicit_invocation: false

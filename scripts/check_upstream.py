@@ -9,11 +9,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _common import ROOT, read_json, write_json
+from _common import ROOT, read_json, resolve_upstream_source, write_json
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check upstream state")
+    parser.add_argument("--source", default="mattpocock", help="Upstream source under upstream/ (default: mattpocock)")
     parser.add_argument("--head", default=None, help="Override the upstream head revision")
     return parser.parse_args()
 
@@ -31,7 +32,8 @@ def infer_head(lock: dict) -> str | None:
 
 def main() -> None:
     args = parse_args()
-    lock_path = ROOT / "upstream" / "mattpocock" / "LOCK.json"
+    upstream_dir = resolve_upstream_source(args.source)
+    lock_path = upstream_dir / "LOCK.json"
     lock = read_json(lock_path, default={}) or {}
     report_dir = ROOT / "reports" / "upstream"
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -58,15 +60,19 @@ def main() -> None:
         "head": head,
         "status": status,
     }
-    report_path = report_dir / "check-upstream.md"
-    report_path.write_text(
-        "# Upstream check\n\n"
+    content = (
+        f"# Upstream check ({args.source})\n\n"
+        f"- Source: {args.source}\n"
         f"- Status: {status}\n"
         f"- Accepted revision: {accepted_revision or 'none'}\n"
         f"- Current head: {head or 'unavailable'}\n"
-        f"- Checked at: {report['checked_at']}\n",
-        encoding="utf-8",
+        f"- Checked at: {report['checked_at']}\n"
     )
+    report_path = report_dir / f"check-upstream-{args.source}.md"
+    report_path.write_text(content, encoding="utf-8")
+    # Back-compat: keep the legacy filename for the default source's existing consumers.
+    if args.source == "mattpocock":
+        (report_dir / "check-upstream.md").write_text(content, encoding="utf-8")
 
     print(f"Status: {status}")
     print(f"Report written to {report_path}")

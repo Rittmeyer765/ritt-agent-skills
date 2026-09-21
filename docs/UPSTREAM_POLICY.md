@@ -14,3 +14,28 @@ Upstream is [mattpocock/skills](https://github.com/mattpocock/skills). It is an 
 ## Cadence
 
 Run `/check-upstream` (or `python3 scripts/check_upstream.py`) when convenient — monthly is plenty. There is no automation that pulls; that is the point.
+
+## Multiple sources (v0.5+)
+
+The upstream tooling is source-parameterized: `check_upstream.py` / `import_upstream.py` /
+`accept_upstream.py` take `--source <name>` (default `mattpocock`). Each source is a directory
+under `upstream/<name>/` with its own `LOCK.json` / `TRACKED.json` / `CUSTOMIZATIONS.json`. Source
+names are validated (`^[a-z0-9][a-z0-9-]*$`, must resolve inside `upstream/`, no symlinks, must exist).
+
+Tracked sources:
+- `mattpocock` — idea source for the engineering skills (MIT); baseline snapshot accepted.
+- `agent-skills-spec` — the canonical Agent Skills spec ([agentskills.io](https://agentskills.io/specification), Apache-2.0). Tracked for spec drift; `validate_repo.py` mirrors its SKILL.md frontmatter rules. No baseline accepted, nothing imported. `anthropics/skills` is examples-only and **unlicensed** — do NOT copy.
+
+## Agent Skills conformance & per-tool extensions
+
+`validate_repo.py` enforces **Agent Skills core conformance**: `name` 1-64
+`^[a-z0-9]+(?:-[a-z0-9]+)*$` matching its directory, `description` 1-1024, and the optional
+`compatibility`/`allowed-tools` fields when present, plus a >500-line SKILL.md warning. This is a
+lightweight hand-parser check — it does **not** fully validate nested `metadata` maps or deep YAML.
+For full, authoritative validation, run the official validator (optional, not bundled/installed):
+`skills-ref validate ./skill` from [agentskills/agentskills](https://github.com/agentskills/agentskills).
+Note: `claude plugin validate . --strict` validates the Claude Code **plugin/marketplace manifest**,
+not the Agent Skills spec — they are complementary, not equivalent.
+
+`disable-model-invocation` (Claude Code) and `agents/openai.yaml` (Codex) are per-tool extensions
+layered on top of the spec, not part of it.

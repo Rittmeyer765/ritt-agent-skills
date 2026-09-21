@@ -1,0 +1,10 @@
+# EXAMPLE — INACTIVE. Pin image + digest; loopback only; secrets via .env (never inline).
+services:
+  omniroute:
+    image: <resolve-real-image-from-release>:v3.8.51   # add @sha256:<digest>; never :latest
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:20128:20128"   # loopback ONLY — never 0.0.0.0 / never a LAN interface
+    restart: "no"
+    # No cloud-sync service, no exposed admin/dashboard beyond loopback, no secondary containers.

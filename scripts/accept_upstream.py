@@ -6,13 +6,14 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 
-from _common import ROOT, read_json, validate_revision, write_json
+from _common import read_json, resolve_upstream_source, validate_revision, write_json
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Accept a reviewed upstream snapshot")
     parser.add_argument("--revision", required=True)
     parser.add_argument("--confirm", required=True)
+    parser.add_argument("--source", default="mattpocock", help="Upstream source under upstream/ (default: mattpocock)")
     return parser.parse_args()
 
 
@@ -23,17 +24,16 @@ def main() -> None:
     if args.revision != args.confirm:
         raise SystemExit("--revision and --confirm must match exactly.")
 
+    upstream_dir = resolve_upstream_source(args.source)
     # Never move the baseline to a revision whose immutable snapshot is not present.
-    snapshot_manifest = (
-        ROOT / "upstream" / "mattpocock" / "snapshots" / args.revision / "MANIFEST.json"
-    )
+    snapshot_manifest = upstream_dir / "snapshots" / args.revision / "MANIFEST.json"
     if not snapshot_manifest.exists():
         raise SystemExit(
             f"Refusing to accept {args.revision}: no snapshot manifest at {snapshot_manifest}. "
             "Run import_upstream.py for this revision first."
         )
 
-    lock_path = ROOT / "upstream" / "mattpocock" / "LOCK.json"
+    lock_path = upstream_dir / "LOCK.json"
     lock = read_json(lock_path, default={}) or {}
     lock.update(
         {

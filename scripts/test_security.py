@@ -82,6 +82,22 @@ def test_import_snapshots_symlink() -> bool:
             return not any(external.iterdir())  # nothing written outside the repo
 
 
+def test_upstream_source_guard() -> bool:
+    # traversal, slashes, and unknown source names must be rejected before any filesystem write
+    for bad in ["../escape", "foo/bar", "does-not-exist-xyz-source", "", "UPPER"]:
+        try:
+            _common.resolve_upstream_source(bad)
+            return False
+        except SystemExit:
+            pass
+    # a real, known source still resolves
+    try:
+        _common.resolve_upstream_source("mattpocock")
+    except SystemExit:
+        return False
+    return True
+
+
 def test_check_task_loop_malformed() -> bool:
     with tempfile.TemporaryDirectory() as d:
         f = Path(d) / "task.md"
@@ -97,6 +113,7 @@ TESTS = {
     "install_project symlink dest blocked": test_install_symlink_dest,
     "install_project .agent-kit-backup symlink blocked": test_install_backup_symlink,
     "import_upstream snapshots/ symlink blocked": test_import_snapshots_symlink,
+    "upstream source guard (traversal/unknown) blocked": test_upstream_source_guard,
     "check_task_loop malformed candidate blocked": test_check_task_loop_malformed,
 }
 

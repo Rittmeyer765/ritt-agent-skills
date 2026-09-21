@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.5.2] - 2026-09-21
+
+### Added
+
+- docs/OPERATIONS.md "Permission resilience": Manual (`default`) as the stable mode when the Auto-Mode classifier is down, the `claude --permission-mode default` recovery command, a minimal read-only local allowlist, the max-one-retry DEGRADED policy, and the independent TCC/OneDrive procedure. `bypassPermissions` is prohibited.
+
+### Changed
+
+- Version 0.5.1 -> 0.5.2 (docs/config patch; no behavior change to skills).
+
+
+## [0.5.1] - 2026-09-21
+
+### Changed
+
+- `graphify-map`: query logging disabled by default (`GRAPHIFY_QUERY_LOG_DISABLE=1`) and answers budget-capped (`graphify query … --budget ${GRAPHIFY_QUERY_BUDGET:-1500}`, validated 100..100000). Still refuses install/hook/mcp/serve/network/docs; `build` stays `extract <path> --code-only`. Self-test now asserts the exact argv (incl. `--budget`) and rejects a non-numeric budget.
+
+### Added
+
+- `docs/benchmarks/graphify-smoke.md` — A/B smoke result (OPTIONAL, not default; limitations recorded).
+- `docs/OPERATIONS.md` — daily flow, occasional Graphify usage, validations, upstream review, and monthly-job manage/remove.
+
+
+## [0.5.0] - 2026-09-20
+
+### Added
+
+- Agent Skills spec conformance in `validate_repo.py` (agentskills.io): `name` pattern/length matching the directory, `description` length, optional `compatibility`/`allowed-tools`, and a >500-line SKILL.md warning.
+- Multi-source upstream: `check_upstream.py`/`import_upstream.py`/`accept_upstream.py` take `--source` (default `mattpocock`); `upstream/agent-skills-spec/` tracks the Agent Skills spec repo (Apache-2.0), review-first, nothing imported. `resolve_upstream_source` guards traversal/symlink/unknown sources.
+- `graphify-map` skill (#13): manual, code-only adapter for Graphify; never installs it, never runs `graphify install`, never edits AGENTS.md/CLAUDE.md/hooks; outputs kept local.
+- `docs/integrations/omniroute/`: inactive, opt-in gateway templates (loopback-only, hardened, no real secrets). `docs/INTEGRATION_MATRIX.md` and `docs/integrations/THIRD_PARTY_EVIDENCE.md`.
+- Security regression now 7/7 (adds upstream-source guard); graphify adapter self-test in `validate_repo.py`.
+
+### Changed
+
+- Version 0.4.0 -> 0.5.0 across manifests. `EXPECTED_SKILLS` 12 -> 13.
+
+
 ## [0.4.0] - 2026-09-20
 
 ### Changed

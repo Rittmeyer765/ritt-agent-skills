@@ -1,6 +1,6 @@
 ---
 name: check-upstream
-description: Check whether mattpocock/skills has new changes, produce a review report, and never modify local skills automatically.
+description: Check whether a tracked upstream (mattpocock/skills or the agent-skills-spec) has new changes, produce a review report, and never modify local skills automatically.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ Update checks are read-only. Nothing in this flow may touch `plugins/` — promo
 
 Run from the ritt-agent-skills repository root:
 
-1. **Check:** `python3 scripts/check_upstream.py` — compares upstream HEAD against the accepted baseline in `upstream/mattpocock/LOCK.json`. Exit 0 = `UP_TO_DATE` (report it and stop).
+1. **Check:** `python3 scripts/check_upstream.py [--source <name>]` — compares upstream HEAD against the accepted baseline in `upstream/<source>/LOCK.json`. Sources: `mattpocock` (default) and `agent-skills-spec`. Exit 0 = `UP_TO_DATE`, 1 = `UPDATE_AVAILABLE`, 2 = `NO_BASELINE` (e.g. agent-skills-spec has none yet), 3 = `UNVERIFIED`. Run once per source.
 2. **On `UPDATE_AVAILABLE`:** import the candidate and diff it against the baseline:
    ```bash
    python3 scripts/import_upstream.py --revision <new-head-sha>

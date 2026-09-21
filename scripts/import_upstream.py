@@ -21,17 +21,17 @@ from _common import (
     is_within,
     load_tracked_paths,
     read_json,
+    resolve_upstream_source,
     sha256_file,
     validate_revision,
     write_json,
 )
 
-UPSTREAM_DIR = ROOT / "upstream" / "mattpocock"
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Import an upstream snapshot candidate")
     parser.add_argument("--revision", required=True, help="Full commit SHA to import")
+    parser.add_argument("--source", default="mattpocock", help="Upstream source under upstream/ (default: mattpocock)")
     parser.add_argument("--source-dir", default=None, help="Optional local checkout to import from")
     return parser.parse_args()
 
@@ -87,13 +87,14 @@ def snapshot_files(source_dir: Path, tracked_paths: list[str]) -> list[Path]:
 def main() -> None:
     args = parse_args()
     validate_revision(args.revision)  # blocks path traversal via --revision
-    lock = read_json(UPSTREAM_DIR / "LOCK.json", default={}) or {}
-    tracked_paths = load_tracked_paths(UPSTREAM_DIR / "TRACKED.json")
+    upstream_dir = resolve_upstream_source(args.source)
+    lock = read_json(upstream_dir / "LOCK.json", default={}) or {}
+    tracked_paths = load_tracked_paths(upstream_dir / "TRACKED.json")
     if not tracked_paths:
         raise SystemExit("TRACKED.json lists no paths; nothing to import.")
 
-    snapshots_root = UPSTREAM_DIR / "snapshots"
-    assert_safe_snapshots_root(snapshots_root, UPSTREAM_DIR)
+    snapshots_root = upstream_dir / "snapshots"
+    assert_safe_snapshots_root(snapshots_root, upstream_dir)
     snapshot_dir = snapshots_root / args.revision
     if not is_within(snapshot_dir, snapshots_root):
         raise SystemExit("Refusing snapshot path outside snapshots/.")
